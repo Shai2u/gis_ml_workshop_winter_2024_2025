@@ -109,7 +109,7 @@ def main(file_path):
     return model_pipeline
 
 if __name__ == "__main__":
-    file_path = '../../data/Combined.csv'
+    file_path = '../../data/Combined_with_lat_long_trf_3.csv'
     model_pipeline = main(file_path)
     # Saving the pipeline
     with open('model.pkl', 'wb') as file:
