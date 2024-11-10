@@ -1,6 +1,14 @@
 import dash
 from dash import dcc, html, Input, Output
 import dash_bootstrap_components as dbc
+import pickle
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
+def load_model(file_path):
+    with open(file_path, 'rb') as file:
+        model = pickle.load(file)
+    return model
 
 # Initialize the app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -28,9 +36,19 @@ app.layout = html.Div(
 )
 def update_output(n_clicks, value):
     if n_clicks > 0:
-        return f"Submitted text: {value}"  # Display the submitted text in the output div
+        result = model.predict([value])
+        if result[0] == 1:
+            return "This is a real news article."
+        else:
+            return f"{result[0]} This is a fake news article."
     return "Enter some text and click submit."
 
 # Run the app
 if __name__ == "__main__":
+    model = load_model('model.pkl')
     app.run_server(debug=True)
+
+
+
+
+
