@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 import spacy  # For natural language processing and extracting locations from text
 from collections import Counter  # For counting occurrences of extracted locations
-
+from geolocate import geolocate_text
 
 # Define synonyms for "United States" to unify different variations under a single label
 United_states_synonyms = ["U.S", "America", "States", "US", "U.S.", "the United States"]
@@ -80,7 +80,8 @@ def update_output(n_clicks, value):
         location = extract_most_common_location(value)
         
         if result[0] == 1:
-            return f"This is a real news article. {location}"
+            latlnog = geolocate_text(location)['point']
+            return f"This is a real news article. {location} {latlnog}"
         else:
             return f"{result[0]} This is a fake news article. {location}"
     return "Enter some text and click submit."
