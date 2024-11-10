@@ -1,6 +1,7 @@
 import dash
 from dash import dcc, html, Input, Output
 import dash_bootstrap_components as dbc
+import plotly.express as px
 import pickle
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -18,7 +19,15 @@ def load_model(file_path):
         model = pickle.load(file)
     return model
 
-
+def generate_map(df = pd.DataFrame()):
+    fig = {}
+    if len(df)==0:
+        df = px.data.carshare()
+        fig = px.scatter_map(df, lat="centroid_lat", lon="centroid_lon",     color="peak_hour", size="car_hours",
+                    color_continuous_scale=px.colors.cyclical.IceFire, size_max=15, zoom=10)
+    
+        fig.update_layout(height=500)  # Adjust map height as needed
+    return fig
 def extract_most_common_location(text):
     # Process the text using spaCy's NLP model
     doc = nlp(text)
@@ -63,28 +72,32 @@ app.layout = html.Div(
         html.Button("Submit", id="submit-button", n_clicks=0, style={"margin-bottom": "10px"}),
 
         # HTML Div to display the output text
-        html.Div(id="output-div", style={"border": "1px solid #ddd", "padding": "10px"})
+        html.Div(id="output-div", style={"border": "1px solid #ddd", "padding": "10px"}),
+        dcc.Graph(id="scatter-map", config={"displayModeBar": False})
     ],
     style={"display": "flex", "flex-direction": "column", "width": "1200px", "margin": "auto"}
 )
 
 # Define the callback to update the output div
 @app.callback(
-    Output("output-div", "children"),
+    [Output("output-div", "children"),
+    Output("scatter-map", "figure")],
     [Input("submit-button", "n_clicks")],
     [dash.dependencies.State("input-text", "value")]
 )
 def update_output(n_clicks, value):
+    fig = generate_map()
+    return_ = ["", fig]
     if n_clicks > 0:
         result = model.predict([value])
         location = extract_most_common_location(value)
         
         if result[0] == 1:
             latlnog = geolocate_text(location)['point']
-            return f"This is a real news article. {location} {latlnog}"
+            return_ =  f"This is a real news article. {location} {latlnog}"
         else:
-            return f"{result[0]} This is a fake news article. {location}"
-    return "Enter some text and click submit."
+            return_ =  f"{result[0]} This is a fake news article. {location}"
+    return return_
 
 # Run the app
 if __name__ == "__main__":
