@@ -8,56 +8,55 @@ import pickle
 
 
 def model(X_train, y_train, vectorizer = vectorizer, n_estimators = 257, max_depth = 18, min_samples_split = 7):
-    def model(X_train, y_train, vectorizer=vectorizer, n_estimators=257, max_depth=18, min_samples_split=7):
-        """
-        Trains a Random Forest model using the provided training data and hyperparameters, and evaluates its accuracy.
+    """
+    Trains a Random Forest model using the provided training data and hyperparameters, and evaluates its accuracy.
 
-        Parameters
-        ----------
-        X_train : array-like or sparse matrix of shape (n_samples, n_features)
-            The training input samples.
-        y_train : array-like of shape (n_samples,)
-            The target values (class labels) as integers or strings.
-        vectorizer : object, default=vectorizer
-            The vectorizer to transform the input data.
-        n_estimators : int, default=257
-            The number of trees in the forest.
-        max_depth : int, default=18
-            The maximum depth of the tree.
-        min_samples_split : int, default=7
-            The minimum number of samples required to split an internal node.
+    Parameters
+    ----------
+    X_train : array-like or sparse matrix of shape (n_samples, n_features)
+        The training input samples.
+    y_train : array-like of shape (n_samples,)
+        The target values (class labels) as integers or strings.
+    vectorizer : object, default=vectorizer
+        The vectorizer to transform the input data.
+    n_estimators : int, default=257
+        The number of trees in the forest.
+    max_depth : int, default=18
+        The maximum depth of the tree.
+    min_samples_split : int, default=7
+        The minimum number of samples required to split an internal node.
 
-        Returns
-        -------
-        accuracy : float
-            The accuracy of the model on the test data.
-        pipeline : sklearn.pipeline.Pipeline
-            The trained pipeline containing the vectorizer and the Random Forest classifier.
-        """
+    Returns
+    -------
+    accuracy : float
+        The accuracy of the model on the test data.
+    pipeline : sklearn.pipeline.Pipeline
+        The trained pipeline containing the vectorizer and the Random Forest classifier.
+    """
 
-        # Hyperparameters suggested by Optuna
-        n_estimators = n_estimators
-        max_depth = max_depth
-        min_samples_split = min_samples_split
-        vectorizer = vectorizer
-        # Random Forest model with suggested hyperparameters
-        pipeline = Pipeline([
-            ('tfidf', vectorizer),
-            ('clf', RandomForestClassifier(
-                n_estimators=n_estimators,
-                max_depth=max_depth,
-                min_samples_split=min_samples_split,
-                random_state=42
-            ))
-        ])
+    # Hyperparameters suggested by Optuna
+    n_estimators = n_estimators
+    max_depth = max_depth
+    min_samples_split = min_samples_split
+    vectorizer = vectorizer
+    # Random Forest model with suggested hyperparameters
+    pipeline = Pipeline([
+        ('tfidf', vectorizer),
+        ('clf', RandomForestClassifier(
+            n_estimators=n_estimators,
+            max_depth=max_depth,
+            min_samples_split=min_samples_split,
+            random_state=42
+        ))
+    ])
 
-        # Train the model
-        pipeline.fit(X_train, y_train)
+    # Train the model
+    pipeline.fit(X_train, y_train)
 
-        # Predict and evaluate
-        y_pred = pipeline.predict(X_test)
-        accuracy = accuracy_score(y_test, y_pred)
-        return accuracy, pipeline
+    # Predict and evaluate
+    y_pred = pipeline.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    return accuracy, pipeline
 
 def preprocess_data(df):
     """
