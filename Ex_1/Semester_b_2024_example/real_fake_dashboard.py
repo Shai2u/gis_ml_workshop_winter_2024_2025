@@ -57,7 +57,7 @@ def generate_map(lat=45.501, lon=-73.5673, location='Montreal', fake=True):
 
 
 
-def extract_most_common_location(text, nlp = nlp):
+def extract_most_common_location(text, nlp):
     # Process the text using spaCy's NLP model
     doc = nlp(text)
 
