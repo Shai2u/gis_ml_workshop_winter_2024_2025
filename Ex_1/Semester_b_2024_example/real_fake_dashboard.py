@@ -57,7 +57,7 @@ def generate_map(lat=45.501, lon=-73.5673, location='Montreal', fake=True):
 
 
 
-def extract_most_common_location(text):
+def extract_most_common_location(text, nlp = nlp):
     # Process the text using spaCy's NLP model
     doc = nlp(text)
 
@@ -135,8 +135,9 @@ def update_output(n_clicks, value):
 
 # Run the app
 if __name__ == "__main__":
-    model = load_model('model.pkl')
     nlp = spacy.load("en_core_web_trf")
+
+    model = load_model('model.pkl')
     app.run_server(debug=True)
 
 
