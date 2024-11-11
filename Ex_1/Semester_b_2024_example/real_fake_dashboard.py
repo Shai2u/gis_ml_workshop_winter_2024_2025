@@ -2,6 +2,7 @@ import dash
 from dash import dcc, html, Input, Output
 import dash_bootstrap_components as dbc
 import plotly.express as px
+import plotly.graph_objects as go
 import pickle
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -19,15 +20,43 @@ def load_model(file_path):
         model = pickle.load(file)
     return model
 
-def generate_map(df = pd.DataFrame()):
-    fig = {}
-    if len(df)==0:
-        df = px.data.carshare()
-        fig = px.scatter_map(df, lat="centroid_lat", lon="centroid_lon",     color="peak_hour", size="car_hours",
-                    color_continuous_scale=px.colors.cyclical.IceFire, size_max=15, zoom=10)
-    
-        fig.update_layout(height=500)  # Adjust map height as needed
+def generate_map(lat=45.501, lon=-73.5673, location='Montreal', fake=True):
+    if fake:
+        color = 'red'
+        fake_text = 'fake'
+    else:
+        color = 'green'
+        fake_text = 'real'
+
+    fig = go.Figure(go.Scattermapbox(
+            lat=[lat],
+            lon=[lon],
+            mode='markers',
+            marker=go.scattermapbox.Marker(
+                size=14,
+                color=color
+            ),
+            text=f"{location}: {fake_text}"
+        ))
+
+    fig.update_layout(
+        hovermode='closest',
+        mapbox=dict(
+            accesstoken="pk.eyJ1Ijoic2hhaXN1c3NtYW4iLCJhIjoiY2w2OW1sNnQ5MDR1bDNjbjFzMnQzdzViaCJ9.lFrtxuzxqkAaGMxJK3xw9w",
+            bearing=0,
+            center=go.layout.mapbox.Center(
+                lat=lat,
+                lon=lon
+            ),
+            pitch=0,
+            zoom=5
+        ),
+        height=800
+    )
     return fig
+
+
+
 def extract_most_common_location(text):
     # Process the text using spaCy's NLP model
     doc = nlp(text)
@@ -86,17 +115,22 @@ app.layout = html.Div(
     [dash.dependencies.State("input-text", "value")]
 )
 def update_output(n_clicks, value):
-    fig = generate_map()
-    return_ = ["", fig]
+    map_fig = generate_map()
+    return_text = ""
     if n_clicks > 0:
         result = model.predict([value])
         location = extract_most_common_location(value)
         
         if result[0] == 1:
             latlnog = geolocate_text(location)['point']
-            return_ =  f"This is a real news article. {location} {latlnog}"
+            return_text =  f"This is a real news article. {location} {latlnog}"
+            map_fig = generate_map(lat = latlnog[0], lon = latlnog[1], location = location, fake=False)
         else:
-            return_ =  f"{result[0]} This is a fake news article. {location}"
+            latlnog = geolocate_text(location)['point']
+            return_text =  f"{result[0]} This is a fake news article. {location}"
+            map_fig = generate_map(lat = latlnog[0], lon = latlnog[1], location = location, fake=True)
+
+    return_ = [return_text, map_fig]
     return return_
 
 # Run the app
