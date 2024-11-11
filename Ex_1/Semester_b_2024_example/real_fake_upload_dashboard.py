@@ -4,6 +4,7 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 from geolocate import geolocate_text
 import base64
+import spacy  # For natural language processing and extracting locations from text
 
 from real_fake_dashboard import extract_most_common_location, load_model
 import io
@@ -57,7 +58,7 @@ def update_output(contents, filename):
             df = pd.read_csv(io.StringIO(decoded.decode("utf-8")))
             # Display the first few rows of the DataFrame
             result = model.predict(df['text'])
-            location = df['text'].apply(extract_most_common_location)
+            location = df['text'].apply(lambda t: extract_most_common_location(t, nlp))
 
             geo_located_points = pd.Series(location).apply(lambda p: geolocate_text(p)['point'])
             geo_located_points_lat = geo_located_points.apply(lambda p: p[0])
@@ -77,5 +78,6 @@ def update_output(contents, filename):
 
 # Run the app
 if __name__ == "__main__":
+    nlp = spacy.load("en_core_web_trf")
     model = load_model('model.pkl')
     app.run_server(debug=True)
